@@ -26,7 +26,7 @@
 #endif
 
 #ifndef SERVICEBUS_DOMAIN
-#define SERVICEBUS_DOMAIN	"servicebus.int7.windows-int.net"
+#define SERVICEBUS_DOMAIN	"servicebus.windows.net"
 #endif
 
 extern void protonError(int err, char *step, pn_messenger_t *messenger);

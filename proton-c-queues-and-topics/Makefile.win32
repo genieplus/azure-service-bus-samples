@@ -1,0 +1,63 @@
+##
+##  Copyright 2014 Microsoft Corporation
+##
+##  Licensed under the Apache License, Version 2.0 (the "License");
+##  you may not use this file except in compliance with the License.
+##  You may obtain a copy of the License at
+##
+##    http://www.apache.org/licenses/LICENSE-2.0
+##
+##  Unless required by applicable law or agreed to in writing, software
+##  distributed under the License is distributed on an "AS IS" BASIS,
+##  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+##  See the License for the specific language governing permissions and
+##  limitations under the License.
+##
+
+##
+## PROTONVER is the minor version, since all versions of Proton are 0.x
+## PROTONROOT is where you untarred Proton, which will usually be something\qpid-proton-0.x
+## PROTONCONFIG is the configuration you used to build Proton in Visual Studio. The Proton README recommends RelWithDebInfo.
+##
+PROTONVER=6
+PROTONROOT=e:\qpid-proton-0.$(PROTONVER)
+PROTONCONFIG=RelWithDebInfo
+
+# /Zi includes debug info
+CFLAGS=/Zi /DSERVICEBUS_DOMAIN="\"servicebus.windows.net\""
+
+OPTS=/I $(PROTONROOT)\proton-c\include /I $(PROTONROOT)\build\proton-c\include
+LIBBASE=$(PROTONROOT)\build\proton-c\$(PROTONCONFIG)\qpid-proton
+
+OBJDIR=objs
+BINDIR=bins
+
+all:	$(OBJDIR) $(BINDIR) $(BINDIR)\0$(PROTONVER) $(BINDIR)\0$(PROTONVER)\sender0$(PROTONVER).exe $(BINDIR)\0$(PROTONVER)\receiver0$(PROTONVER).exe $(BINDIR)\0$(PROTONVER)\qpid-proton.dll
+
+$(OBJDIR):
+	mkdir $@
+
+$(BINDIR):
+	mkdir $@
+
+$(BINDIR)\0$(PROTONVER):
+	mkdir $@
+
+
+$(BINDIR)\0$(PROTONVER)\sender0$(PROTONVER).exe:	$(OBJDIR)\sender0$(PROTONVER).obj $(OBJDIR)\common0$(PROTONVER).obj
+	$(CC) $(CFLAGS) /Fe$@ $** $(LIBBASE).lib rpcrt4.lib
+
+$(OBJDIR)\sender0$(PROTONVER).obj:	sender.c common.h
+	$(CC) $(CFLAGS) $(OPTS) /c /Fo$@ /TP sender.c
+
+$(BINDIR)\0$(PROTONVER)\receiver0$(PROTONVER).exe:	$(OBJDIR)\receiver0$(PROTONVER).obj $(OBJDIR)\common0$(PROTONVER).obj
+	$(CC) $(CFLAGS) /Fe$@ $** $(LIBBASE).lib rpcrt4.lib
+
+$(OBJDIR)\receiver0$(PROTONVER).obj:	receiver.c common.h
+	$(CC) $(CFLAGS) $(OPTS) /c /Fo$@ /TP receiver.c
+
+$(OBJDIR)\common0$(PROTONVER).obj:	common.c common.h
+	$(CC) $(CFLAGS) $(OPTS) /c /Fo$@ /TP common.c
+
+$(BINDIR)\0$(PROTONVER)\qpid-proton.dll:	$(LIBBASE).dll
+	copy $** $(BINDIR)\0$(PROTONVER)

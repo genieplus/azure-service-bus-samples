@@ -1,0 +1,80 @@
+In general, we recommend using the latest version of Proton-C.
+
+This guidance applies to the "Messenger" API provided by Proton-C.
+
+We advise setting the outgoing window via pn_messenger_set_outgoing_window() in all versions.
+
+   Service Bus supports retrieving messages in two modes, which we call PeekLock and ReceiveAndDelete.
+In PeekLock mode, the broker retains the message until the client explicitly accepts it. If the
+client explicitly rejects the message, or does not specify a disposition before the peek lock times out,
+then the message becomes available again to consumers. This mode provides at-least-once reliability, at
+the expense of more network traffic and slower throughput. In ReceiveAndDelete mode, the broker disposes
+of the message immediately after sending it to the client. This mode can provide higher throughput if an
+application can tolerate potential message loss on a crash.
+   In Proton-C versions 0.5 and later, setting the incoming window via pn_messenger_set_incoming_window()
+is required in order to interoperate with Service Bus in PeekLock mode. Not setting the incoming window
+leaves an application in what one might call Browse mode: messages are peeked and locked, but the
+client has no way of completing them, with the result that the locks expire and the same messages are
+delivered again and again.
+   With Proton-C versions 0.5, 0.6, and 0.7, setting the incoming window is sufficient to enter
+PeekLock mode, and there is no way to use ReceiveAndDelete mode. In version 0.8, setting the incoming
+window leaves the application in ReceiveAndDelete mode, and additional API calls are necessary to enter
+PeekLock mode. See the version-specific notes for 0.8 for more details.
+   Proton-C version 0.4 has the concept of "accept modes" instead; see the version-specific notes for
+more details.
+
+   The general form of the URL that Proton-C uses to address a Service Bus entity is
+amqps://user:key@namespace.servicebus.windows.net/entitypath. This form remains the same across all
+versions with one important exception. The key is a Base64-encoded version of an ACS or SAS key, and
+as such can contain certain characters which are reserved in URLs, so one would normally URL-encode it.
+Despite that, for versions 0.6 and earlier, the key MUST NOT be URL-encoded, even if the key contains
+the '/' character. For versions 0.7 and later, Proton-C's URL parser changed and the key MUST be
+URL-encoded.
+
+
+VERSION 0.4
+===========
+This is the oldest version that we have tested, and the most different from the other versions.
+
+pn_messenger_send() always sends all messages which have been queued for sending by pn_messenger_put().
+Also, pn_messenger_send() does not support blocking sends. The only way to get the final status of a
+send is to keep polling the tracker using pn_messenger_status() until it returns a final status
+(such as PN_STATUS_ACCEPTED or PN_STATUS_REJECTED) or the application has waited long enough to
+give up and assume the send failed.
+
+pn_messenger_error() returns an error string directly.
+
+This version has the concept of "accept modes". To enter PeekLock mode, call pn_messenger_set_accept_mode()
+to set the mode PN_ACCEPT_MODE_MANUAL.
+
+
+VERSION 0.5
+===========
+Significant API changes:
+
+pn_messenger_send() now takes a number of messages to send, and supports blocking sends. When blocking,
+the call will not return until it has a final state for the message(s) sent.
+
+pn_messenger_error() returns type pn_error_t which contains the error string and other info.
+
+Introduces the concept of the incoming window and the API pn_messenger_set_incoming_window().
+
+
+VERSION 0.6
+===========
+Added new message states which allow for better error reporting: PN_STATUS_RELEASED, PN_STATUS_ABORTED,
+and PN_STATUS_SETTLED, which are all final states. PN_STATUS_ABORTED is of particular interest because
+it indicates a send attempt which failed before reaching the network level (for example, the client
+couldn't even connect to the broker).
+
+
+VERSION 0.7
+===========
+Starting with this version, the key in the URL must be URL-encoded.
+
+
+VERSION 0.8
+===========
+This version introduces the new APIs pn_messenger_set_snd_settle_mode() and
+pn_messenger_set_rcv_settle_mode(). In order to enter PeekLock mode, it is necessary to set the modes to
+PN_SND_UNSETTLED and PN_RCV_SECOND, respectively, prior to setting the size of the incoming window.
