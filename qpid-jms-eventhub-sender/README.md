@@ -1,7 +1,7 @@
 # Event Hub Sender sample for use with Qpid JMS AMQP 1.0 client
 
 The Qpid JMS AMQP 1.0 client is available at http://qpid.apache.org/components/qpid-jms/index.html
-Service Bus only supports AMQP 1.0, you you specifically want the AMQP 1.0 client.
+Service Bus only supports AMQP 1.0, so you specifically need the AMQP 1.0 client.
 
 ## Things to consider:
 
