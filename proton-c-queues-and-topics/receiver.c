@@ -126,11 +126,11 @@ int receive(char *sbnamespace, char *entity, char *issuerName, char *issuerKey)
     printf("CALL pn_messenger_subscribe... ");
     pn_subscription_t *subscription =
         pn_messenger_subscribe(messenger, address);
-    printf("RETURNED\n", err);
+    printf("RETURNED\n");
     if (NULL == subscription)
     {
         printf("pn_messenger_subscribe returned NULL\n");
-        printf("%s", pn_messenger_error(messenger));
+        printf("%s", pn_error_text(pn_messenger_error(messenger)));
         return -1;
     }
 
