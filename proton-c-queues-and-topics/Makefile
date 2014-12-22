@@ -25,6 +25,7 @@ PROTONROOT := ~/proton/qpid-proton-0.$(PROTONVER)
 PROTONLIBVER := 2
 
 CFLAGS := -g -DSERVICEBUS_DOMAIN="\"servicebus.windows.net\""
+LDFLAGS := -luuid
 
 OPTS := -I $(PROTONROOT)/proton-c/include \
 	-I $(PROTONROOT)/build/proton-c/include
@@ -56,14 +57,14 @@ $(BINDIR)/0$(PROTONVER):
 
 $(BINDIR)/0$(PROTONVER)/sender0$(PROTONVER):	\
 	$(OBJDIR)/sender0$(PROTONVER).o $(OBJDIR)/common0$(PROTONVER).o
-	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS)
 
 $(OBJDIR)/sender0$(PROTONVER).o:	sender.c common.h
 	$(CC) $(CFLAGS) -c $(OPTS) -o $@ $<
 
 $(BINDIR)/0$(PROTONVER)/receiver0$(PROTONVER):	\
 	$(OBJDIR)/receiver0$(PROTONVER).o $(OBJDIR)/common0$(PROTONVER).o
-	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS)
 
 $(OBJDIR)/receiver0$(PROTONVER).o:	receiver.c common.h
 	$(CC) $(CFLAGS) -c $(OPTS) -o $@ $<
